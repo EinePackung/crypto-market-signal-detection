@@ -1,0 +1,28 @@
+#datasets
+data/
+
+# cache
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+# OS
+.DS_Store
+Thumbs.db
+
+# Kaggle Token
+.kaggle/
+kaggle.json
+access_token
+
+# Zip files
+*.zip
+*.tar.gz
+
+kom_stud_yeseok_bae.conf
