@@ -15,3 +15,22 @@
 * **Machine Output:** Implement a way to transform the LLM's text answers into machine output.
 * **Define Classes:** Finalize the predefined classification categories (e.g. "buy/sell" signal class).
 * **Poster Preparation:** Start working on the poster to ensure the draft is sent to Leo and Florian one day before the final submission deadline.
+
+
+# Meeting Notes - 26.05.2026
+
+## Goals for the Next 2 Weeks
+* **LLM & Model Refinement:**
+    * Test LLM performance on correct coin recognition from tweets.
+    * Implement and check prediction confidence scores.
+    * Explore zero-shot vs. few-shot inference techniques.
+    * Investigate if pre-processing tweets improves model accuracy.
+
+* **Data & Analysis:**
+    * Verify and validate the price history database.
+    * Analyze the correlation between social media influence (popular figures) and coin price.
+    * Develop evaluation code to cross-reference price movements with tweet timestamps.
+
+* **Poster & Presentation:**
+    * Revise and refine the project poster layout and content.
+    * Compare DOGE price history against Elon Musk's tweet activity for the poster demonstration.
