@@ -17,36 +17,73 @@ from langchain_ollama import OllamaLLM
 llm = OllamaLLM(
     model="llama3.1",
     base_url="http://10.0.100.10:11434",
-    format="json" 
+    format="json"
 )
 
 # 2. Load prompt
-with open("prompts/predict_signal_v1.md") as f:
-    prompt_template = f.read()
+prompt_path = "prompts/predict_signal_(few-shot_inference)_v4.md"
+with open(prompt_path) as default_prompt_file :
+    prompt_template = default_prompt_file.read()
 
 # 3. Data load from local
-df = pd.read_csv("data/Bitcoin Tweets/Bitcoin_tweets.csv")
-sample = df.head(5)
-
+datasets_path = "data/CrypTop12-main/tweet/raw/btc/2017-10-04.json"
+coin = "BTC"
+df = pd.read_json(datasets_path, lines=True)
 
 # 4. Input into the LLM
 results = []
-for index, row in sample.iterrows():
-    tweet_text = str(row["text"])
-    prompt = prompt_template.format(tweet_text=tweet_text)
+for index, row in df.iterrows():
+    username_from_datasets = str(row["username"])
+    tweet_text_from_datasets = str(row["tweet"])
+    upload_date_from_datasets = str(row["created_at"])
+    retweets_count_from_datasets = str(row["retweets_count"])
+    likes_count_from_datasets = str(row["likes_count"])
+    follwers_count_from_datasets = str(row["Follower_count"])
+    replies_count_from_datasets = str(row["replies_count"])
+
+    prompt = prompt_template.format(
+        username=username_from_datasets,
+        tweet_text=tweet_text_from_datasets,
+        coin=coin,
+        upload_date=upload_date_from_datasets,
+        retweets_count=retweets_count_from_datasets,
+        likes_count=likes_count_from_datasets,
+        follwers_count=follwers_count_from_datasets,
+        replies_count=replies_count_from_datasets
+    )
 
     try:
         response = llm.invoke(prompt)
         parsed = json.loads(response)
 
-        print(f"tweet #{index + 1}: {tweet_text[:80]}...")
+        # Correct wrong response like BUYSIGNAL instead of BUY
+        signal = parsed.get("signal")
+        signal = str(signal).upper().strip()
+        if signal == "BUYSIGNAL" or signal == "BUY SIGNAL" or signal == "BU" or signal == "B":
+            signal = "BUY"
+        if signal == "SELLSIGNAL" or signal == "SELL SIGNAL" or signal == "SEL" or signal == "SE" or signal == "S":
+            signal = "SELL"
+        if signal not in ("BUY", "SELL", "NEUTRAL"):
+            signal = "NEUTRAL"
+
+        ticker = parsed.get("ticker")
+        if ticker != coin:
+            ticker = coin
+
+        print(f"tweet #{index + 1}: {tweet_text_from_datasets[:80]}...")
         print(f"parsed: {parsed}")
         results.append({
-            "text": tweet_text,
-            "signal": parsed.get("signal"),
+            "text": tweet_text_from_datasets,
+            "signal": signal,
             "confidence": parsed.get("confidence"),
             "reason": parsed.get("reason"),
-            "ticker": parsed.get("ticker")
+            "ticker": ticker,
+            "username": username_from_datasets,
+            "created_at": upload_date_from_datasets,
+            "retweets_count": retweets_count_from_datasets,
+            "likes_count": likes_count_from_datasets,
+            "followers_count": follwers_count_from_datasets,
+            "replies_count": replies_count_from_datasets
         })
 
     except Exception as e:
@@ -55,11 +92,7 @@ for index, row in sample.iterrows():
 
 
 # 5. Save the result
-pd.DataFrame(results).to_csv("results/test_run_v1.csv", index=False)
-print("save complete: results/test_run_v1.csv")
-
-
-
-
-
+save_path = "results/ollama_response/btc/2017_10_04_with_prompt_v4_no_filtered.csv"
+pd.DataFrame(results).to_csv(save_path, index=False)
+print(f"save complete: ", save_path)
 
