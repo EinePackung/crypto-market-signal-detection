@@ -34,3 +34,20 @@
 * **Poster & Presentation:**
     * Revise and refine the project poster layout and content.
     * Compare DOGE price history against Elon Musk's tweet activity for the poster demonstration.
+
+
+# Meeting Notes - 09.06.2026
+
+## Goals for the Next 2 Weeks
+* **Start with the Report**
+
+* **X API:**
+    * Decision to exclude the integration of the X API
+    * But technically possible
+
+* **Code Refinement**
+    * Filtering.
+    * Price history.
+
+
+
