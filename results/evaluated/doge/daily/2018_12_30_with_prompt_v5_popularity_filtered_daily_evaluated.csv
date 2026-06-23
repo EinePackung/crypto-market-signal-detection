@@ -1,0 +1,2 @@
+date,total_tweets,buy_count,sell_count,neutral_count,buy_ratio,predicted_signal,actual_signal,current_close,next_day_close,price_change,price_change_percent,evaluation
+2018-12-30,2,0,0,2,,NEUTRAL,NEUTRAL,0.00236741850232,0.00234553226726,-2.1886235059999717e-05,-0.9244768104393819,correct

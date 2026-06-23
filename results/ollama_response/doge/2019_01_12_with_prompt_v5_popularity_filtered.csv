@@ -1,0 +1,3 @@
+tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
+1084078219689709568,Doge is 14 years old.  Shiba Inus live up to 15 years.   :'(,NEUTRAL,0.4,The tweet is a joke comparing the lifespan of Doge to Shiba Inus and lacks enough visible context to determine a next-day DOGE price direction.,DOGE,crowddemon,2019-01-12 18:52:43 IST,41,297,614,9,HIGH_ATTENTION
+1083925248230051840,i am laughing at doge in 2019 and i dont know if i should be mad about it,NEUTRAL,0.4,The tweet expresses a personal sentiment about past DOGE price movements but lacks clear context for predicting the next-day price direction.,DOGE,rceezus,2019-01-12 08:44:52 IST,2,46,28228,5,NORMAL

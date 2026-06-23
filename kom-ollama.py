@@ -30,6 +30,43 @@ datasets_path = "data/CrypTop12-main/tweet/raw/btc/2017-10-04.json"
 coin = "BTC"
 df = pd.read_json(datasets_path, lines=True)
 
+MIN_FOLLOWERS = 100000
+MIN_LIKES = 100
+MIN_RETWEETS = 50
+MIN_REPLIES = 5
+
+HIGH_FOLLOWERS = 1000000
+HIGH_LIKES = 250
+HIGH_RETWEETS = 200
+HIGH_REPLIES = 25
+
+def get_popularity_label(row):
+    low_popularity = (
+        row["Follower_count"] < MIN_FOLLOWERS
+        and row["likes_count"] < MIN_LIKES
+        and row["retweets_count"] < MIN_RETWEETS
+        and row["replies_count"] < MIN_REPLIES
+    )
+
+    if low_popularity:
+        return "EXCLUDE"
+
+    high_attention = (
+        row["Follower_count"] >= HIGH_FOLLOWERS
+        or row["likes_count"] >= HIGH_LIKES
+        or row["retweets_count"] >= HIGH_RETWEETS
+        or row["replies_count"] >= HIGH_REPLIES
+    )
+
+    if high_attention:
+        return "HIGH_ATTENTION"
+
+    return "NORMAL"
+
+df["popularity_label"] = df.apply(get_popularity_label, axis=1)
+print(df["popularity_label"].value_counts())
+df = df[df["popularity_label"] != "EXCLUDE"].copy()
+
 # 4. Input into the LLM
 results = []
 for index, row in df.iterrows():
@@ -83,7 +120,8 @@ for index, row in df.iterrows():
             "retweets_count": retweets_count_from_datasets,
             "likes_count": likes_count_from_datasets,
             "followers_count": follwers_count_from_datasets,
-            "replies_count": replies_count_from_datasets
+            "replies_count": replies_count_from_datasets,
+            "popularity_label": row["popularity_label"]
         })
 
     except Exception as e:
@@ -92,7 +130,6 @@ for index, row in df.iterrows():
 
 
 # 5. Save the result
-save_path = "results/ollama_response/btc/2017_10_04_with_prompt_v4_no_filtered.csv"
+save_path = "results/ollama_response/btc/2017_10_04_with_prompt_v4_popularity_filtered.csv"
 pd.DataFrame(results).to_csv(save_path, index=False)
 print(f"save complete: ", save_path)
-

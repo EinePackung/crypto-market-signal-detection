@@ -1,0 +1,2 @@
+date,total_tweets,buy_count,sell_count,neutral_count,buy_ratio,predicted_signal,actual_signal,current_close,next_day_close,price_change,price_change_percent,evaluation
+2020-03-12,48,29,0,19,1.0,BUY,BUY,4970.78790105,5563.70689169,592.9189906399997,11.928068596826572,correct

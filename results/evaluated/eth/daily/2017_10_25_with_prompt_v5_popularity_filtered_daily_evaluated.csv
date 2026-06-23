@@ -1,0 +1,2 @@
+date,total_tweets,buy_count,sell_count,neutral_count,buy_ratio,predicted_signal,actual_signal,current_close,next_day_close,price_change,price_change_percent,evaluation
+2017-10-25,15,4,0,11,1.0,BUY,NEUTRAL,297.92498779296875,296.5270080566406,-1.397979736328125,-0.46923883313191445,incorrect

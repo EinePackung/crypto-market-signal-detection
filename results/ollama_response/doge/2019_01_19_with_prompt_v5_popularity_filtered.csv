@@ -1,0 +1,2 @@
+tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
+1086518179428392961,doge from a while back  https://t.co/NOLt2N8dpZ,NEUTRAL,0.4,The tweet contains a link to an old post about DOGE but lacks enough visible context to determine a next-day price direction.,DOGE,ppaperosee,2019-01-19 12:28:15 IST,46,481,19993,0,HIGH_ATTENTION

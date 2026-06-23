@@ -1,0 +1,2 @@
+tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
+1016046705156993024,My favorite crypto is $ETC  ... and $DOGE; if you don't like $DOGE you should quit crypto immediately.,NEUTRAL,0.4,The tweet mentions DOGE as a favorite crypto but does not provide clear bullish or bearish information for the next-day price direction.,DOGE,cobracrypto,2018-07-09 01:19:46 IST,20,160,14886,14,NORMAL

@@ -1,0 +1,3 @@
+tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
+922953823706116098,Doge is never bullish. Doge is only dogeish.,NEUTRAL,0.4,The tweet contains a subjective statement about DOGE's nature without providing clear price direction or market analysis.,DOGE,ledgerstatus,2017-10-25 04:01:53 IST,5,32,125120,1,NORMAL
+922962551931068416,"All in on $doge into 2018, obvious C&amp;H, one of those fancy coffee shop short but stocky cups for a cappucino. 1000 sat soon. #seriousTAonly  https://t.co/eygPtz6xVY",BUY,0.6,The tweet mentions a bullish prediction of $1000 sat for DOGE into 2018.,DOGE,fullbeerbottle,2017-10-25 04:36:34 IST,15,64,40575,9,NORMAL

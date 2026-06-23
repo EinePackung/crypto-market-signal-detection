@@ -1,0 +1,3 @@
+tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
+931549817943285760,dogecoin still has a ~$150 million market cap,NEUTRAL,0.4,The tweet mentions DOGE's market cap but lacks context to determine a next-day price direction.,DOGE,neerajka,2017-11-17 21:19:18 IST,10,78,118352,8,NORMAL
+931585217256665088,You could own every dogecoin in existence and still not have enough  https://t.co/rNTGclqAIv,BUY,0.7,"The tweet implies that DOGE has a high supply, which may lead to increased selling pressure and potentially lower prices in the short term.",DOGE,neerajka,2017-11-17 23:39:58 IST,2,18,118352,0,NORMAL
