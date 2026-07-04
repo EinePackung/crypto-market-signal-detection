@@ -1,0 +1,5 @@
+coin,result_file,processed_rows,expected_rows,status,last_source_row_number,last_created_at_utc
+BTC,results/ollama-response_influencer/BTC/BTC_minute_base_llm_result.csv,328,328,complete,328,2022-06-19T03:04:01Z
+ETH,results/ollama-response_influencer/ETH/ETH_minute_base_llm_result.csv,414,414,complete,414,2021-02-19T13:56:33Z
+SOL,results/ollama-response_influencer/SOL/SOL_minute_base_llm_result.csv,27,27,complete,27,2021-02-24T20:29:15Z
+DOGE,results/ollama-response_influencer/DOGE/DOGE_minute_base_llm_result.csv,20820,54273,partial,20820,2023-01-27 20:13:51+00:00

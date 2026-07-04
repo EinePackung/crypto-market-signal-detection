@@ -1,0 +1,59 @@
+Update zur Influencer-Analyse
+
+Ich habe die neue Analyse fuer Influencer-Tweets und kurzfristige Krypto-Preisbewegungen vorbereitet.
+
+Was neu ist:
+
+- Es gibt jetzt einen neuen Ollama-Workflow fuer Influencer-Tweets:
+  - Datei: kom-ollama_influencer.py
+  - Prompt: prompts/minute_base_predigt_prompt_v1.md
+
+- Der Prompt prueft zuerst, ob ein Tweet ueberhaupt zur jeweiligen Coin passt.
+  Danach gibt das Modell ein Signal aus:
+  - BUY
+  - SELL
+  - NEUTRAL
+
+- Zusaetzlich speichert das Modell:
+  - confidence
+  - impact_strength
+  - reason
+  - ticker
+
+- Fuer BTC, ETH und SOL wurde die LLM-Auswertung komplett durchgefuehrt.
+
+- Fuer DOGE wurde Elon Musk ausgewertet. Der Datensatz ist sehr gross, deshalb wurde die DOGE-Auswertung nur teilweise ausgefuehrt.
+
+Wichtige Ergebnisdateien:
+
+- results/ollama-response_influencer/coin_average_price_change_rate.csv
+  Diese Datei zeigt die normale durchschnittliche Preisveraenderung je Coin fuer 1, 3, 5, 10, 15, 30 und 60 Minuten.
+
+- results/ollama-response_influencer/influencer_tweet_price_change_rate_summary.csv
+  Diese Datei vergleicht die Preisveraenderung nach Influencer-Tweets mit der normalen Preisveraenderung.
+
+- results/ollama-response_influencer/influencer_tweet_price_change_rate_events.csv
+  Diese Datei enthaelt die Detaildaten pro Tweet und Zeitraum.
+
+- results/ollama-response_influencer/multi_horizon_signal_direction_summary.csv
+  Diese Datei zeigt, wie oft BUY/SELL-Signale nach 5, 10, 15, 30 und 60 Minuten richtig waren.
+
+Wichtige Beobachtungen:
+
+- DOGE zeigt nach Elon-Musk-Tweets eine deutlich hoehere kurzfristige Preisbewegung als normal.
+
+- Die BUY/SELL-Richtung ist bei DOGE aber nicht stabil genug. Die Trefferquote liegt oft nur ungefaehr bei 50 Prozent.
+
+- BTC ist bei der BUY/SELL-Richtung stabiler als DOGE.
+
+- ETH zeigt im Vergleich weniger klare kurzfristige Reaktionen.
+
+- SOL zeigt starke Reaktionen, aber die Anzahl der auswertbaren Tweets ist klein. Deshalb sollte man SOL vorsichtig interpretieren.
+
+Hinweis zu den Daten:
+
+- Die grossen Binance-1-Minuten-Preisdaten wurden nicht komplett in Git gespeichert, weil sie sehr gross sind.
+
+- Stattdessen wurden die wichtigen Tweet-Datensaetze, Ergebnisdateien, Prompts und Skripte gespeichert.
+
+- Die Binance-Preisdaten koennen mit dem Download-Skript wieder aufgebaut werden.
