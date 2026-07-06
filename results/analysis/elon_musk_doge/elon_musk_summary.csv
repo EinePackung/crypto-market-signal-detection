@@ -1,2 +1,0 @@
-tweet_count,event_dates,correct_dates,accuracy_percent,majority_baseline_percent,positive_next_day_dates,average_doge_event_day_return_percent,average_doge_return_1d_percent,median_doge_return_1d_percent,average_market_adjusted_return_1d_percent,average_doge_return_3d_percent,average_doge_return_7d_percent
-15,10,4,40.0,50.0,5,9.713441879717784,1.9456998532012135,0.16041336399561712,0.5382941748539385,3.5081247287340744,-2.6612451584134207
