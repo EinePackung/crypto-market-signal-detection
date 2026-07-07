@@ -1,51 +1,57 @@
 Selected Accounts/Influencers
 
+
+Influencer accounts were selected through a role-based purposive sampling strategy.
+An account was eligible if it held at least one of the following roles:
+(i) official project or foundation account,
+(ii) founder or core contributor,
+(iii) major corporate or public advocate with documented asset-related activity,
+(iv) sovereign or policy actor whose decisions directly concern the asset, or
+(v) token namesake or central figure of the token brand.
+These roles are binary and publicly documentable, which makes the selection reproducible
+and avoids arbitrary cutoffs inherent to popularity-based rankings.
+
+This approach was chosen to pre-select accounts whose posts are plausibly relevant
+as public information events for the corresponding cryptocurrency.
+In this report, we analyze the tweets of these influencers in combination with minute-level market price data.
+
+
+Selected Accounts/Influencers:
+
 BTC
 
-- Michael Saylor: selected as a major corporate Bitcoin advocate and Bitcoin treasury figure.
+- Michael Saylor(iii) : selected as a major corporate Bitcoin advocate and Bitcoin treasury figure.
 
-- Jack Dorsey: selected because of his public Bitcoin advocacy and his role in Twitter/X and Block.
+- Jack Dorsey(iii): selected because of his public Bitcoin advocacy and his role in Twitter/X and Block.
 
-- Nayib Bukele: selected as a sovereign policy actor associated with El Salvador's Bitcoin adoption.
+- Nayib Bukele(iv): selected as a sovereign policy actor associated with El Salvador's Bitcoin adoption.
 
 
 
 ETH
 
-- Vitalik Buterin: selected as Ethereum co-founder and central technical/public figure.
+- Vitalik Buterin(ii): selected as Ethereum co-founder and central technical/public figure.
 
-- Ethereum Foundation: selected as an official Ethereum ecosystem account.
+- Tim Beiko(ii): selected for Ethereum protocol upgrade and core development updates.
 
-- Tim Beiko: selected for Ethereum protocol upgrade and core development updates.
-
-- @ethereum / @ethdotorg: selected as official Ethereum communication channels.
+- @ethereum(i) / @ethdotorg(i): selected as official Ethereum communication channels.
 
 
 
 DOGE
 
-- Elon Musk: selected because of his repeated historical Dogecoin references and high public visibility.
+- Elon Musk(iii): selected because of his repeated historical Dogecoin references and high public visibility.
+    # We define April 2, 2019 as the start of Elon Musk’s public Dogecoin-related period,
+    because this is the first clear Dogecoin-related public tweet in his Twitter/X account.
+    On that date, Musk tweeted that Dogecoin might be his favorite cryptocurrency and
+    later posted “Dogecoin rulz.”
+    Therefore, DOGE results before 2019 April 2 were excluded from the Elon Musk-Dogecoin analysis.
 
-- Billy Markus: selected as Dogecoin co-creator and public Dogecoin-related figure.
-
-- Dogecoin official: selected as an official Dogecoin project/community account.
-
-- Dogecoin Foundation: selected as an official foundation account for the Dogecoin ecosystem.
+- Dogecoin official(i): selected as an official Dogecoin project/community account.
 
 
 
 TRUMP
 
-- Donald Trump: selected as the token namesake and central public figure behind the TRUMP meme coin brand.
+- Donald Trump(iv, v): selected as the token namesake and central public figure behind the TRUMP meme coin brand.
 
-
-
-SOL
-
-- Solana official: selected as the official Solana ecosystem account.
-
-- Anatoly Yakovenko: selected as Solana co-founder and key technical/public figure.
-
-- Raj Gokal: selected as Solana co-founder and public ecosystem figure.
-
-- Mert: selected as a prominent Solana ecosystem infrastructure and commentary figure.
