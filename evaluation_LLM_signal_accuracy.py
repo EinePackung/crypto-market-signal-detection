@@ -129,15 +129,15 @@ def make_event_rows(ollama_df, price_maps):
 
         for minutes in MINUTES_AFTER_TWEET:
             target_ms = start_ms + minutes * 60000
-            target_price = price_map.get(target_ms, pd.NA)
+            end_price = price_map.get(target_ms, pd.NA)
 
-            if pd.isna(start_price) or pd.isna(target_price) or start_price == 0:
+            if pd.isna(start_price) or pd.isna(end_price) or start_price == 0:
                 price_change = pd.NA
                 price_change_rate = pd.NA
                 is_price_flat = pd.NA
                 correct = pd.NA
             else:
-                price_change = target_price - start_price
+                price_change = end_price - start_price
                 price_change_rate = price_change / start_price
                 is_price_flat = price_change == 0
                 correct = is_correct(tweet["signal"], price_change)
@@ -155,7 +155,7 @@ def make_event_rows(ollama_df, price_maps):
                     "start_minute_utc": ms_to_utc_text(start_ms),
                     "target_minute_utc": ms_to_utc_text(target_ms),
                     "start_price": start_price,
-                    "target_price": target_price,
+                    "end_price": end_price,
                     "price_change": price_change,
                     "price_change_rate": price_change_rate,
                     "is_price_flat": is_price_flat,
@@ -172,12 +172,8 @@ def summarize_events(event_df):
     groups = []
     for coin in sorted(event_df["coin"].dropna().unique()):
         groups.append(("coin", coin, "BUY_OR_SELL", event_df["coin"] == coin))
-        for signal in ["BUY", "SELL"]:
-            mask = (event_df["coin"] == coin) & (event_df["signal"] == signal)
-            if mask.any():
-                groups.append(("coin_signal", coin, signal, mask))
 
-    groups.append(("overall", "ALL", "BUY_OR_SELL", pd.Series(True, index=event_df.index)))
+    groups.append(("overall", "overall", "BUY_OR_SELL", pd.Series(True, index=event_df.index)))
 
     for group_type, coin, signal_name, mask in groups:
         group_df = event_df[mask]
@@ -190,7 +186,7 @@ def summarize_events(event_df):
             tweets_without_price = int(
                 (
                     after_minutes_df["start_price"].isna()
-                    | after_minutes_df["target_price"].isna()
+                    | after_minutes_df["end_price"].isna()
                 ).sum()
             )
             denominator = correct + wrong
@@ -198,12 +194,6 @@ def summarize_events(event_df):
                 correct_percent = round(correct / denominator * 100, 2)
             else:
                 correct_percent = pd.NA
-            flat_denominator = correct + wrong + flat
-            if flat_denominator:
-                flat_ratio = round(flat / flat_denominator, 6)
-            else:
-                flat_ratio = pd.NA
-
             summary_rows.append(
                 {
                     "group_type": group_type,
@@ -215,7 +205,6 @@ def summarize_events(event_df):
                     "correct": correct,
                     "wrong": wrong,
                     "flat": flat,
-                    "flat_ratio": flat_ratio,
                     "correct_probability_percent": correct_percent,
                 }
             )

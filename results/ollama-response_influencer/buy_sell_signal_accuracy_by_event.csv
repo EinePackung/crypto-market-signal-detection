@@ -1,4 +1,4 @@
-coin,minutes_after_tweet,source_row_number,created_at_utc,username,signal,confidence,impact_strength,start_minute_utc,target_minute_utc,start_price,target_price,price_change,price_change_rate,is_price_flat,is_prediction_correct
+coin,minutes_after_tweet,source_row_number,created_at_utc,username,signal,confidence,impact_strength,start_minute_utc,target_minute_utc,start_price,end_price,price_change,price_change_rate,is_price_flat,is_prediction_correct
 BTC,1,1,2017-12-06 01:55:41+00:00,jack,BUY,0.7,4.0,2017-12-06 01:56:00+00:00,2017-12-06 01:57:00+00:00,,,,,,
 BTC,3,1,2017-12-06 01:55:41+00:00,jack,BUY,0.7,4.0,2017-12-06 01:56:00+00:00,2017-12-06 01:59:00+00:00,,,,,,
 BTC,5,1,2017-12-06 01:55:41+00:00,jack,BUY,0.7,4.0,2017-12-06 01:56:00+00:00,2017-12-06 02:01:00+00:00,,,,,,
