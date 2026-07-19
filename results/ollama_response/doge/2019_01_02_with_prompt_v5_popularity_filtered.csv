@@ -1,4 +1,0 @@
-tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
-1080251125444546562,My doge Chico ate an entire pizza ☠️☠️☠️,NEUTRAL,0.4,The tweet is unrelated to DOGE's market direction and only mentions a personal anecdote.,DOGE,landn,2019-01-02 05:25:13 IST,35,819,244488,151,HIGH_ATTENTION
-1080210451827474433,happy new year from my grease and this cute doge i found in the basement. hope ur new years resolution was to throw our ur juuls hahahahahah  https://t.co/v3NQC6ASGo,NEUTRAL,0.4,The tweet is unrelated to DOGE or its market direction and only contains a personal message.,DOGE,itssamcollins,2019-01-02 02:43:35 IST,41,748,97939,22,HIGH_ATTENTION
-1080201383238922242,"$DOGE, and I'm far from alone in that!",NEUTRAL,0.4,The tweet mentions DOGE but lacks enough visible context to determine a next-day price direction.,DOGE,notsofast,2019-01-02 02:07:33 IST,1,36,168121,11,NORMAL

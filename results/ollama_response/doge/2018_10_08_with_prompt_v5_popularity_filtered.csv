@@ -1,2 +1,0 @@
-tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
-1049361068529799169,Great interview with Dogecoin Core dev @JRossNicoll about #Dogecoin and the DOGE/ETH bridge.,NEUTRAL,0.4,"The tweet mentions a great interview with Dogecoin Core dev about the DOGE/ETH bridge, but it lacks enough visible context to determine a next-day DOGE price direction.",DOGE,dogecoin,2018-10-08 23:39:09 IST,51,137,1819959,16,HIGH_ATTENTION

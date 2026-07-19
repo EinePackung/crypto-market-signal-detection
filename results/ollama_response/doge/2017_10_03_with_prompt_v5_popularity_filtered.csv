@@ -1,3 +1,0 @@
-tweet_id,text,signal,confidence,reason,ticker,username,created_at,retweets_count,likes_count,followers_count,replies_count,popularity_label
-915153397355044865,I miss my doge 😭,NEUTRAL,0.4,The tweet is a personal expression of missing one's dog and lacks context related to DOGE's market direction.,DOGE,demisxxual,2017-10-03 15:25:47 IST,0,22,130760,1,NORMAL
-915074846391803904,"Ok its official we are renaming doge, GIMMIE YOUR BEST (its a she)  https://t.co/vD9mPhvWiR",NEUTRAL,0.4,The tweet mentions renaming DOGE but lacks enough context to determine a next-day price direction.,DOGE,lynnienoquez,2017-10-03 10:13:39 IST,0,28,16865,26,HIGH_ATTENTION
