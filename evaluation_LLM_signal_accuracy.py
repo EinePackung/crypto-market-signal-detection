@@ -1,150 +1,131 @@
 # Evaluate BUY/SELL prediction accuracy from kom-ollama_influencer.py results.
 
-
-
 from pathlib import Path
 
 import pandas as pd
 
 
-# Change these input and output paths before running the script.
+# Default run: BTC and ETH are saved in the base output files below.
+# To make the separate Elon-DOGE or Trump-TRUMP files, replace the settings below
 ollama_response_csv_files = [
     "results/ollama-response_influencer/BTC/BTC_minute_base_llm_result.csv",
-    "results/ollama-response_influencer/DOGE/DOGE_minute_base_llm_result.csv",
     "results/ollama-response_influencer/ETH/ETH_minute_base_llm_result.csv",
+#   "results/ollama-response_influencer/DOGE/DOGE_minute_base_llm_result.csv"
+#   "results/ollama-response_influencer/TRUMP/TRUMP_minute_base_llm_result.csv"
 ]
 
 binance_price_dataset_folders = {
     "BTC": "data/binance_price_change_per-minute/raw/BTC",
     "ETH": "data/binance_price_change_per-minute/raw/ETH",
-    "DOGE": "data/binance_price_change_per-minute/raw/DOGE",
+#   "DOGE": "data/binance_price_change_per-minute/raw/DOGE"
+#   "TRUMP": "data/binance_price_change_per-minute/raw/TRUMP"
 }
 
-# Each standardized Ollama result already contains the selected accounts for its coin.
-tweet_account_by_coin = {
-    "BTC": "all_accounts",
-    "ETH": "all_accounts",
-    "DOGE": "elonmusk",
-}
 
 by_event_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_by_event.csv"
+# by_event_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_by_event_elon-DOGE.csv"
+# by_event_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_by_event_Trump-Trump coin.csv"
+
 summary_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_summary.csv"
+# summary_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_summary_elon-DOGE.csv"
+# summary_out_csv_path = "results/ollama-response_influencer/buy_sell_signal_accuracy_summary_Trump-Trump coin.csv"
 
-MINUTES_AFTER_TWEET = [1, 3, 5, 10, 15, 30, 60, 120, 360, 720, 1440]
-ONE_MINUTE_MS = 60 * 1000
 
 
-# Round the tweet time up to the next minute and convert it to milliseconds.
-# E.g. 16:46:15 -> 16:47:00 -> 1517417220000
-def first_minute_after_tweet_in_ms(tweet_time):
+
+
+minutes_after_tweet = [1, 3, 5, 10, 15, 30, 60, 120, 360, 720, 1440]
+one_minute_ms = 60 * 1000
+
+
+def first_minute_after_tweet_ms(tweet_time):
     tweet_ms = int(tweet_time.timestamp() * 1000)
-    return ((tweet_ms + ONE_MINUTE_MS - 1) // ONE_MINUTE_MS) * ONE_MINUTE_MS
+    return ((tweet_ms + one_minute_ms - 1) // one_minute_ms) * one_minute_ms
 
 
-def fix_price_time_unit(price_df):
-    price_df["open_time"] = pd.to_numeric(price_df["open_time"], errors="coerce")
-
-    # Some price files use microseconds instead of milliseconds.
-    microsecond_rows = price_df["open_time"] > 100_000_000_000_000
-    price_df.loc[microsecond_rows, "open_time"] = (
-        price_df.loc[microsecond_rows, "open_time"] // 1000
+def utc_text(milliseconds):
+    return pd.to_datetime(milliseconds, unit="ms", utc=True).strftime(
+        "%Y-%m-%d %H:%M:%S+00:00"
     )
 
-    return price_df
 
+def load_ollama_results(csv_files):
+    dataframes = []
 
-def ms_to_utc_text(ms):
-    if pd.isna(ms):
-        return ""
-    return pd.to_datetime(int(ms), unit="ms", utc=True).strftime("%Y-%m-%d %H:%M:%S+00:00")
-
-
-
-
-def load_ollama_results(ollama_response_csv_files, tweet_account_by_coin):
-    read_results = []
-
-    for csv_file in ollama_response_csv_files:
-        path = Path(csv_file)
-        df = pd.read_csv(path)
-
-        coin = df["coin"].iloc[0]
-        tweet_account = tweet_account_by_coin[coin]
-        if tweet_account != "all_accounts":
-            df = df[df["username"] == tweet_account].copy()
+    for csv_file in csv_files:
+        df = pd.read_csv(csv_file)
 
         df["created_at_utc"] = pd.to_datetime(df["created_at_utc"], utc=True)
-        df["start_minute_ms"] = df["created_at_utc"].apply(
-            first_minute_after_tweet_in_ms
-        )
         df["created_at_utc_text"] = df["created_at_utc"].dt.strftime(
             "%Y-%m-%d %H:%M:%S+00:00"
         )
-        read_results.append(df)
+        df["start_minute_ms"] = df["created_at_utc"].apply(
+            first_minute_after_tweet_ms
+        )
+        dataframes.append(df)
 
-    return pd.concat(read_results, ignore_index=True)
+    return pd.concat(dataframes, ignore_index=True)
 
 
-def load_price_map(coin, binance_price_dataset_folder):
-    coin_dir = Path(binance_price_dataset_folder)
-    price_frames = []
+def load_price_map(coin, folder):
+    dataframes = []
 
-    for path in sorted(coin_dir.glob(f"{coin.upper()}USDT-1m-*.csv")):
-        df = pd.read_csv(path, usecols=["open_time", "close_price"])
-        df = fix_price_time_unit(df)
-        price_frames.append(df)
+    for csv_file in sorted(Path(folder).glob(f"{coin}USDT-1m-*.csv")):
+        df = pd.read_csv(csv_file, usecols=["open_time", "close_price"])
+        df["open_time"] = pd.to_numeric(df["open_time"], errors="coerce")
 
-    if not price_frames:
-        raise FileNotFoundError(f"No Binance price CSV files found in: {coin_dir}")
+        # Some Binance files use microseconds instead of milliseconds.
+        microseconds = df["open_time"] > 100_000_000_000_000
+        df.loc[microseconds, "open_time"] = df.loc[microseconds, "open_time"] // 1000
+        dataframes.append(df)
 
-    prices = pd.concat(price_frames, ignore_index=True)
+    if not dataframes:
+        raise FileNotFoundError(f"No Binance price CSV files found in: {folder}")
+
+    prices = pd.concat(dataframes, ignore_index=True)
     prices["close_price"] = pd.to_numeric(prices["close_price"], errors="coerce")
     prices = prices.dropna(subset=["open_time", "close_price"])
     prices["open_time"] = prices["open_time"].astype("int64")
     prices = prices.sort_values("open_time").drop_duplicates("open_time", keep="last")
+
     return pd.Series(prices["close_price"].values, index=prices["open_time"])
 
 
-def is_correct(signal, price_change):
-    if pd.isna(price_change):
-        return pd.NA
+def prediction_is_correct(signal, price_change):
     if price_change == 0:
         return pd.NA
     if signal == "BUY":
         return price_change > 0
-    if signal == "SELL":
-        return price_change < 0
-    return pd.NA
+    return price_change < 0
 
 
-def make_event_rows(ollama_df, price_maps):
+def make_by_event_csv(ollama_df, price_maps):
     rows = []
-    buy_sell_df = ollama_df[ollama_df["signal"].isin(["BUY", "SELL"])].copy()
+    buy_sell_tweets = ollama_df[ollama_df["signal"].isin(["BUY", "SELL"])]
 
-    for _, tweet in buy_sell_df.iterrows():
-        coin = tweet["coin"]
-        price_map = price_maps[coin]
+    for _, tweet in buy_sell_tweets.iterrows():
+        price_map = price_maps[tweet["coin"]]
         start_ms = int(tweet["start_minute_ms"])
         start_price = price_map.get(start_ms, pd.NA)
 
-        for minutes in MINUTES_AFTER_TWEET:
-            target_ms = start_ms + minutes * 60000
-            end_price = price_map.get(target_ms, pd.NA)
+        for minutes in minutes_after_tweet:
+            end_ms = start_ms + minutes * one_minute_ms
+            end_price = price_map.get(end_ms, pd.NA)
 
             if pd.isna(start_price) or pd.isna(end_price) or start_price == 0:
                 price_change = pd.NA
                 price_change_rate = pd.NA
                 is_price_flat = pd.NA
-                correct = pd.NA
+                is_correct = pd.NA
             else:
                 price_change = end_price - start_price
                 price_change_rate = price_change / start_price
                 is_price_flat = price_change == 0
-                correct = is_correct(tweet["signal"], price_change)
+                is_correct = prediction_is_correct(tweet["signal"], price_change)
 
             rows.append(
                 {
-                    "coin": coin,
+                    "coin": tweet["coin"],
                     "minutes_after_tweet": minutes,
                     "source_row_number": tweet["source_row_number"],
                     "created_at_utc": tweet["created_at_utc_text"],
@@ -152,80 +133,82 @@ def make_event_rows(ollama_df, price_maps):
                     "signal": tweet["signal"],
                     "confidence": tweet["confidence"],
                     "impact_strength": tweet["impact_strength"],
-                    "start_minute_utc": ms_to_utc_text(start_ms),
-                    "target_minute_utc": ms_to_utc_text(target_ms),
+                    "start_minute_utc": utc_text(start_ms),
+                    "target_minute_utc": utc_text(end_ms),
                     "start_price": start_price,
                     "end_price": end_price,
                     "price_change": price_change,
                     "price_change_rate": price_change_rate,
                     "is_price_flat": is_price_flat,
-                    "is_prediction_correct": correct,
+                    "is_prediction_correct": is_correct,
                 }
             )
 
     return pd.DataFrame(rows)
 
 
-def summarize_events(event_df):
-    summary_rows = []
+def make_summary_csv(event_df):
+    rows = []
 
-    groups = []
     for coin in sorted(event_df["coin"].dropna().unique()):
-        groups.append(("coin", coin, "BUY_OR_SELL", event_df["coin"] == coin))
+        coin_events = event_df[event_df["coin"] == coin]
 
-    groups.append(("overall", "overall", "BUY_OR_SELL", pd.Series(True, index=event_df.index)))
-
-    for group_type, coin, signal_name, mask in groups:
-        group_df = event_df[mask]
-        for minutes in MINUTES_AFTER_TWEET:
-            after_minutes_df = group_df[group_df["minutes_after_tweet"] == minutes]
-            valid_df = after_minutes_df[after_minutes_df["is_prediction_correct"].notna()]
-            correct = int((valid_df["is_prediction_correct"] == True).sum())
-            wrong = int((valid_df["is_prediction_correct"] == False).sum())
-            flat = int((after_minutes_df["is_price_flat"] == True).sum())
-            tweets_without_price = int(
-                (
-                    after_minutes_df["start_price"].isna()
-                    | after_minutes_df["end_price"].isna()
-                ).sum()
-            )
-            denominator = correct + wrong
-            if denominator:
-                correct_percent = round(correct / denominator * 100, 2)
+        for signal_name in ["BUY_OR_SELL", "BUY", "SELL"]:
+            if signal_name == "BUY_OR_SELL":
+                signal_events = coin_events
             else:
-                correct_percent = pd.NA
-            summary_rows.append(
-                {
-                    "group_type": group_type,
-                    "coin": coin,
-                    "LLM response signal": signal_name,
-                    "minutes_after_tweet": minutes,
-                    "total tweets": int(len(after_minutes_df)),
-                    "tweets_without_price": tweets_without_price,
-                    "correct": correct,
-                    "wrong": wrong,
-                    "flat": flat,
-                    "correct_probability_percent": correct_percent,
-                }
-            )
+                signal_events = coin_events[coin_events["signal"] == signal_name]
 
-    return pd.DataFrame(summary_rows)
+            for minutes in minutes_after_tweet:
+                minute_df = signal_events[
+                    signal_events["minutes_after_tweet"] == minutes
+                ]
+                valid_df = minute_df[minute_df["is_prediction_correct"].notna()]
+
+                correct = int((valid_df["is_prediction_correct"] == True).sum())
+                wrong = int((valid_df["is_prediction_correct"] == False).sum())
+                flat = int((minute_df["is_price_flat"] == True).sum())
+                missing_price = int(
+                    (
+                        minute_df["start_price"].isna()
+                        | minute_df["end_price"].isna()
+                    ).sum()
+                )
+
+                if correct + wrong == 0:
+                    correct_percent = pd.NA
+                else:
+                    correct_percent = round(correct / (correct + wrong) * 100, 2)
+
+                rows.append(
+                    {
+                        "coin": coin,
+                        "LLM response signal": signal_name,
+                        "minutes_after_tweet": minutes,
+                        "total tweets": len(minute_df),
+                        "tweets_without_price": missing_price,
+                        "correct": correct,
+                        "wrong": wrong,
+                        "flat": flat,
+                        "correct_probability_percent": correct_percent,
+                    }
+                )
+
+    return pd.DataFrame(rows)
 
 
 def main():
-    ollama_df = load_ollama_results(
-        ollama_response_csv_files,
-        tweet_account_by_coin,
-    )
+    ollama_df = load_ollama_results(ollama_response_csv_files)
 
-    coins = sorted(ollama_df["coin"].dropna().unique())
-    price_maps = {
-        coin: load_price_map(coin, binance_price_dataset_folders[coin])
-        for coin in coins
-    }
+    price_maps = {}
+    for coin in sorted(ollama_df["coin"].dropna().unique()):
+        price_maps[coin] = load_price_map(
+            coin,
+            binance_price_dataset_folders[coin],
+        )
 
-    event_df = make_event_rows(ollama_df, price_maps)
-    summary_df = summarize_events(event_df)
+    event_df = make_by_event_csv(ollama_df, price_maps)
+    summary_df = make_summary_csv(event_df)
 
     event_df.to_csv(by_event_out_csv_path, index=False)
     summary_df.to_csv(summary_out_csv_path, index=False)
