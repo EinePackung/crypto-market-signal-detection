@@ -1,93 +1,190 @@
-# T7 - Crypto Market Signal Detection
+# Crypto Market Signal Detection
 
+**Can an LLM turn cryptocurrency-related social media posts into useful short-term market signals?**
 
+A research project developed for the TU Darmstadt KOM lab, summer semester 2026 (Team T7). The project uses **Llama 3.1 through Ollama** to classify posts from selected public figures and cryptocurrency accounts, then compares those signals with **Binance one-minute price data**.
 
-## Getting started
+The main analysis covers **BTC, ETH, DOGE, and TRUMP**. It asks two separate questions: whether a predicted direction matches the subsequent price movement, and whether price movements after posts are larger than typical market movements.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## How it works
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+```mermaid
+flowchart LR
+    A[Historical social media posts] --> B[Select accounts and normalize timestamps to UTC]
+    B --> C[Llama 3.1 via Ollama]
+    C --> D[BUY / SELL / NEUTRAL]
+    D --> E[Evaluate across 11 time horizons]
+    F[Binance one-minute prices] --> E
+    E --> G[Directional accuracy]
+    E --> H[Price movement vs. market baseline]
 ```
-cd existing_repo
-git remote add origin https://git.kom.e-technik.tu-darmstadt.de/student/labs/sose26/t7-crypto-market-signal-detection.git
-git branch -M main
-git push -uf origin main
+
+Each inference returns a signal, coin relevance, impact strength from 0 to 5, confidence from 0 to 1, and a short explanation. The [main prompt](prompts/minute_base_predict_prompt_v1.md) targets the next **60 minutes**; evaluation also examines horizons from **1 minute to 24 hours**.
+
+Accounts are selected by their relationship to an asset: project representatives, founders, advocates, policy actors, or a token's central public figure. The [selection notes](docs/Selected%20Accounts-Influencers.txt) document the rationale.
+
+| Asset | Selected accounts / figures |
+| --- | --- |
+| BTC | Michael Saylor, Jack Dorsey, Nayib Bukele |
+| ETH | Vitalik Buterin, Tim Beiko, Ethereum, ethereum.org |
+| DOGE | Elon Musk |
+| TRUMP | Donald Trump |
+
+## Saved results
+
+The repository includes inference outputs and evaluation CSVs in [results/ollama-response_influencer](results/ollama-response_influencer), so the recorded results can be inspected without running a model.
+
+The table below summarizes the **60-minute BUY/SELL directional evaluation** in the committed summary files. NEUTRAL predictions, missing prices, and unchanged prices are excluded from the accuracy denominator.
+
+| Asset | Saved inference rows | Scored BUY/SELL predictions | Correct | Accuracy |
+| --- | ---: | ---: | ---: | ---: |
+| BTC | 328 | 240 | 127 | 52.92% |
+| ETH | 414 | 84 | 39 | 46.43% |
+| DOGE | 14,682 | 1,801 | 868 | 48.20% |
+| TRUMP | 6,392 | 37 | 23 | 62.16% |
+
+Sources: [BTC / ETH](results/ollama-response_influencer/buy_sell_signal_accuracy_summary.csv), [DOGE](results/ollama-response_influencer/buy_sell_signal_accuracy_summary_elon-DOGE.csv), [TRUMP](results/ollama-response_influencer/buy_sell_signal_accuracy_summary_Trump-Trump%20coin.csv).
+
+These are descriptive results from the saved runs, not evidence of a profitable trading strategy. In particular, TRUMP has a small scored sample, and the DOGE inference file covers only part of the 48,135-row DOGE input slice configured in the runner. Fees, slippage, and execution are not modeled.
+
+## Setup
+
+Use **Python 3.10 or newer** and run commands from the repository root.
+
+```bash
+git clone https://github.com/EinePackung/crypto-market-signal-detection.git
+cd crypto-market-signal-detection
+
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install pandas langchain-ollama requests
 ```
 
-## Integrate with your tools
+These are the dependencies for the main influencer workflow. There is currently no pinned dependency file. Earlier plotting and data-loading experiments also use packages such as `matplotlib` and `kagglehub`.
 
-* [Set up project integrations](https://git.kom.e-technik.tu-darmstadt.de/student/labs/sose26/t7-crypto-market-signal-detection/-/settings/integrations)
+To generate new predictions, an Ollama server with the `llama3.1` model must be available. For an existing local Ollama installation, start the server and pull the model:
 
-## Collaborate with your team
+```bash
+ollama serve
+# Run in a separate terminal:
+ollama pull llama3.1
+```
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+The main inference script currently points to a lab-network Ollama server. For local use, change `base_url` in `kom-ollama_influencer.py` to `http://localhost:11434`.
 
-## Test and Deploy
+## Run the main workflow
 
-Use the built-in continuous integration in GitLab.
+### 1. Prepare the tweet data
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+The standardizer combines selected CrypTop12 accounts with the Elon Musk and Donald Trump datasets. It deduplicates the selected CrypTop12 posts, converts timestamps to UTC, and writes a common schema.
 
-***
+Expected inputs:
 
-# Editing this README
+| Input | Expected location |
+| --- | --- |
+| CrypTop12 raw tweet JSON files | `data/CrypTop12-main/tweet/raw/<coin>/*.json` |
+| Elon Musk posts | `data/Elon Musk Tweets/all_musk_posts.csv` |
+| Donald Trump posts | `data/Trump Tweets(2009-2025).csv` |
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Dataset source URLs and the two supplemental Nayib Bukele rows are recorded in [data/datasets_standardizer.py](data/datasets_standardizer.py). The Musk and Trump CSVs are tracked; CrypTop12 must be obtained separately. New files under `data/` are ignored by Git, while previously tracked files remain included.
 
-## Suggestions for a good README
+```bash
+python data/datasets_standardizer.py
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Output: `data/standardized_influencer_tweets.csv`. The script prints each coin's row range. DOGE input is filtered from April 2, 2019, and TRUMP input from January 18, 2025, using the exact cutoffs in the script.
 
-## Name
-Choose a self-explaining name for your project.
+### 2. Prepare minute-level prices
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+The [price manifest](data/minute_price_monthly_sources.csv) lists the Binance monthly archives used by the project.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```bash
+python scripts/download_binance_1m_klines.py
+```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+**This downloader saves ZIP archives only.** Extract their CSVs into the corresponding coin folders before evaluating:
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+```text
+data/binance_price_change_per-minute/raw/
+├── BTC/BTCUSDT-1m-YYYY-MM.csv
+├── ETH/ETHUSDT-1m-YYYY-MM.csv
+├── DOGE/DOGEUSDT-1m-YYYY-MM.csv
+└── TRUMP/TRUMPUSDT-1m-YYYY-MM.csv
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+The evaluators require named `open_time` and `close_price` columns. For headerless Binance spot kline CSVs, add this header before the first data row:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+```csv
+open_time,open_price,high_price,low_price,close_price,volume,close_time,quote_asset_volume,number_of_trades,taker_buy_base_asset_volume,taker_buy_quote_asset_volume,ignore
+```
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Timestamp values may be in milliseconds or microseconds; the evaluators normalize them to milliseconds. Downloaded and prepared price files are not included in the repository.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### 3. Generate signals
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Before running [kom-ollama_influencer.py](kom-ollama_influencer.py), edit its configuration:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- Set the Ollama `base_url` and model.
+- Choose `coin`: `BTC`, `ETH`, `DOGE`, or `TRUMP`.
+- Set `out_csv_file` to the matching coin's output path.
+- Check the hardcoded row ranges against the standardizer's printed ranges, especially if the source datasets have changed.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+```bash
+python kom-ollama_influencer.py
+```
 
-## License
-For open source projects, say how it is licensed.
+The script currently defaults to DOGE. It saves progress every 10 successful responses and at the end, but **does not resume an existing output file**. Running it again replaces the selected output, so use a new output path to preserve a previous run. Create the parent directory if you choose a new location.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Skip this step when evaluating the committed inference outputs.
+
+### 4. Evaluate
+
+With the price CSVs prepared, run:
+
+```bash
+python evaluation_LLM_signal_accuracy.py
+python evaluation_price_change_ratio.py
+```
+
+Both scripts default to **BTC + ETH**. For DOGE or TRUMP, update the input files, price folders, and output paths in `evaluation_LLM_signal_accuracy.py`; select the corresponding `coin` in `evaluation_price_change_ratio.py`. Re-running evaluation replaces the configured result files.
+
+Outputs include:
+
+| File pattern | Contents |
+| --- | --- |
+| `buy_sell_signal_accuracy_by_event*.csv` | Per-post price changes and whether the predicted direction was correct |
+| `buy_sell_signal_accuracy_summary*.csv` | Accuracy by asset, signal, and time horizon |
+| `influencer_tweet_price_change_rate_events*.csv` | Absolute price changes and comparisons with market baselines |
+| `influencer_tweet_price_change_rate_summary*.csv` | Aggregated price-change rates and baseline ratios |
+
+## Evaluation details
+
+- **Horizons:** 1, 3, 5, 10, 15, 30, 60, 120, 360, 720, and 1,440 minutes.
+- **Time alignment:** a post's timestamp is rounded up to a minute boundary. The reference price is the close of the candle whose `open_time` matches that boundary; the comparison uses the close at the target minute.
+- **Directional accuracy:** BUY is correct when the price rises; SELL is correct when it falls. Accuracy is `correct / (correct + wrong) × 100`. Flat prices and unavailable prices are reported separately.
+- **Movement magnitude:** absolute returns after posts are compared with average absolute returns over the available price data and within the post's month. Results are grouped into all posts and BUY/SELL posts.
+- **Baseline scope:** the market baseline includes all eligible price windows, including windows near posts. It is not a control group with influencer posts removed, and the comparison does not establish causation.
+
+## Repository guide
+
+| Path | Purpose |
+| --- | --- |
+| `kom-ollama_influencer.py` | Main inference runner for selected influencer datasets |
+| `evaluation_LLM_signal_accuracy.py` | Minute-level BUY/SELL directional evaluation |
+| `evaluation_price_change_ratio.py` | Post-event price movements vs. market baselines |
+| `data/datasets_standardizer.py` | Dataset selection and common UTC schema |
+| `scripts/download_binance_1m_klines.py` | Monthly price archive downloader |
+| `scripts/run_crypTop12_ollama_remaining.py` | Separate popularity-filtered CrypTop12 runner with resume support |
+| `prompts/` | Prompt iterations and the minute-level classification prompt |
+| `results/ollama-response_influencer/` | Saved predictions and evaluation results |
+| `docs/` | Concept, report, posters, presentation, and manual validation |
+
+Earlier experiments remain in `kom-ollama.py`, `batch-ollama.py`, `evaluation.py`, and related scripts. Their input schemas, prompts, and daily evaluation differ from the main minute-level workflow described above.
+
+## Project documents
+
+- [Project concept](docs/T7_Concept.pdf)
+- [Report — version 1](docs/Report_Version1.pdf)
+- [Poster — version 2](docs/Poster_Version_2.pdf)
+- [Presentation](docs/crypto_signal_presentation.pptx)
+- [LLM vs. human signal validation](docs/LLM_vs_Human_Signal_Validierung.pdf)
