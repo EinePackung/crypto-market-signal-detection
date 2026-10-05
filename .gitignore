@@ -26,3 +26,8 @@ access_token
 *.tar.gz
 
 kom_stud_yeseok_bae.conf
+
+# Local environment and Office temporary files
+.env.*
+!.env.example
+~$*

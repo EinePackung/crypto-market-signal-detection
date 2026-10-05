@@ -21,12 +21,12 @@ llm = OllamaLLM(
 )
 
 # 2. Load prompt
-prompt_path = "prompts/predict_signal_(few-shot_inference)_v4.md"
+prompt_path = "prompts/predict_signal_v5.md"
 with open(prompt_path) as default_prompt_file :
     prompt_template = default_prompt_file.read()
 
 # 3. Data load from local
-datasets_path = "data/CrypTop12-main/tweet/raw/btc/2017-10-04.json"
+datasets_path = "data/TEST_DATASET_LLM_RESULT.JSON"
 coin = "BTC"
 df = pd.read_json(datasets_path, lines=True)
 
@@ -39,6 +39,7 @@ HIGH_FOLLOWERS = 1000000
 HIGH_LIKES = 250
 HIGH_RETWEETS = 200
 HIGH_REPLIES = 25
+
 
 def get_popularity_label(row):
     low_popularity = (
@@ -63,9 +64,8 @@ def get_popularity_label(row):
 
     return "NORMAL"
 
-df["popularity_label"] = df.apply(get_popularity_label, axis=1)
-print(df["popularity_label"].value_counts())
-df = df[df["popularity_label"] != "EXCLUDE"].copy()
+
+df["popularity_label"] = "TEST"
 
 # 4. Input into the LLM
 results = []
@@ -130,6 +130,6 @@ for index, row in df.iterrows():
 
 
 # 5. Save the result
-save_path = "results/ollama_response/btc/2017_10_04_with_prompt_v4_popularity_filtered.csv"
+save_path = "results/TEST_LLM_RESULT.csv"
 pd.DataFrame(results).to_csv(save_path, index=False)
 print(f"save complete: ", save_path)

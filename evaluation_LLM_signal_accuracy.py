@@ -72,22 +72,30 @@ def load_price_map(coin, folder):
 
     for csv_file in sorted(Path(folder).glob(f"{coin}USDT-1m-*.csv")):
         df = pd.read_csv(csv_file, usecols=["open_time", "close_price"])
+        # if string -> number, if wrong value -> NaN
         df["open_time"] = pd.to_numeric(df["open_time"], errors="coerce")
 
         # Some Binance files use microseconds instead of milliseconds.
         microseconds = df["open_time"] > 100_000_000_000_000
         df.loc[microseconds, "open_time"] = df.loc[microseconds, "open_time"] // 1000
+        # add read dataframe into the df list
         dataframes.append(df)
 
+    # if there is no correct csv data in folder
     if not dataframes:
         raise FileNotFoundError(f"No Binance price CSV files found in: {folder}")
 
     prices = pd.concat(dataframes, ignore_index=True)
+    #price to number
     prices["close_price"] = pd.to_numeric(prices["close_price"], errors="coerce")
+    # if no price delete
     prices = prices.dropna(subset=["open_time", "close_price"])
+    #open time to int (not float)
     prices["open_time"] = prices["open_time"].astype("int64")
+    #sort time aufsteigend and delete duplicated time
     prices = prices.sort_values("open_time").drop_duplicates("open_time", keep="last")
 
+    # series: open time -> end price
     return pd.Series(prices["close_price"].values, index=prices["open_time"])
 
 
@@ -98,14 +106,18 @@ def prediction_is_correct(signal, price_change):
         return price_change > 0
     return price_change < 0
 
-
+# attributes: ollama-result, mps of price series
 def make_by_event_csv(ollama_df, price_maps):
     rows = []
+    #select just buy and sell tweets
     buy_sell_tweets = ollama_df[ollama_df["signal"].isin(["BUY", "SELL"])]
+
 
     for _, tweet in buy_sell_tweets.iterrows():
         price_map = price_maps[tweet["coin"]]
+        #round the seconds
         start_ms = int(tweet["start_minute_ms"])
+        #if no price -> NA
         start_price = price_map.get(start_ms, pd.NA)
 
         for minutes in minutes_after_tweet:
@@ -150,11 +162,15 @@ def make_by_event_csv(ollama_df, price_maps):
 def make_summary_csv(event_df):
     rows = []
 
+    # invoke just the coin column and delete if no data
+    # sort abc...
     for coin in sorted(event_df["coin"].dropna().unique()):
+
         coin_events = event_df[event_df["coin"] == coin]
 
         for signal_name in ["BUY_OR_SELL", "BUY", "SELL"]:
             if signal_name == "BUY_OR_SELL":
+                #buy, sell already filtered in past function
                 signal_events = coin_events
             else:
                 signal_events = coin_events[coin_events["signal"] == signal_name]

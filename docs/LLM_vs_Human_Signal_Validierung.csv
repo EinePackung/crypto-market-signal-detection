@@ -1,4 +1,4 @@
-NR,local-Ollama,Ollama Test,Gemini 3.1 Pro,Claude 5.0 Sonnet High,ChatGPT 5.5 High,Human 1,Human 2
+NR,local-Ollama,Ollama 2.Test,Gemini 3.1 Pro,Claude 5.0 Sonnet High,ChatGPT 5.5 High,Human 1,Human 2
 1,BUY,BUY,NEUTRAL,BUY,BUY,BUY,BUY
 2,BUY,BUY,BUY,NEUTRAL,BUY,BUY,SELL
 3,NEUTRAL,NEUTRAL,NEUTRAL,NEUTRAL,SELL,NEUTRAL,NEUTRAL
@@ -101,4 +101,4 @@ NR,local-Ollama,Ollama Test,Gemini 3.1 Pro,Claude 5.0 Sonnet High,ChatGPT 5.5 Hi
 100,BUY,BUY,BUY,BUY,BUY,BUY,BUY
 Accuracy to Human 1,84.0%,73.0%,75.0%,76.0%,68.0%,100.0%,79.0%
 Accuracy to Human 2,71.0%,70.0%,75.0%,78.0%,69.0%,79.0%,100.0%
-Average,77.5%,71.5%,75.0%,77.0%,68.5%,89.5%,89.5%
+Average,77.5%,71.5%,75.0%,77.0%,68.5%,"",""
